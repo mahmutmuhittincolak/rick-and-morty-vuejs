@@ -4,6 +4,17 @@
       <h1 class="header-h1">RİCK AND MORTY APP</h1>
       <div class="bg-img-div"></div>
     </div>
+    <div class="search">
+      <input
+        v-model="message"
+        @input="listele()"
+        type="text"
+        name="search-group"
+        id="search-group1"
+        class="btn btn-secondary"
+        placeholder="ARAMA YAP"
+      />
+    </div>
     <div class="content-showcase">
       <div class="content-showcase-area">
         <div
@@ -18,7 +29,18 @@
             <div class="section">
               <h2 class="text-white">{{ item.name }}</h2>
               <span class="status">
-                <span class="status__icon"></span>
+                <span
+                  v-if="item.status == 'Alive'"
+                  class="status__icon green"
+                ></span>
+                <span
+                  v-if="item.status == 'unknown'"
+                  class="status__icon grey"
+                ></span>
+                <span
+                  v-if="item.status == 'Dead'"
+                  class="status__icon red"
+                ></span>
                 {{ item.status }} - {{ item.species }}
               </span>
             </div>
@@ -34,6 +56,11 @@
         </div>
       </div>
     </div>
+    <div class="footer">
+      <button class="btn btn-primary" @click="pagedown()">PREV</button>
+      <button class="btn btn-primary" @click="pageup()">NEXT</button>
+      <i class="btn btn-primary">{{ "PAGE NUMBER = " + pagenumber }}</i>
+    </div>
   </div>
 </template>
 
@@ -45,30 +72,71 @@ export default {
 
   data() {
     return {
-      urlchar: "https://rickandmortyapi.com/api/character/?page=19",
+      urlchar: "https://rickandmortyapi.com/api/character/?page=",
+      urlsearch: "https://rickandmortyapi.com/api/character/?name=",
       chars: [],
+      pagenumber: 1,
+      searchbar: null,
     };
   },
   methods: {
-    alive(txt) {
-      if (txt == "Alive") {
-        this.spancolor = "#ff0000";
-      } else if (txt == "Unkown") {
-        this.spancolor = "#fafafa";
-      } else {
-        this.spancolor = "#00ff00";
+    pagepull() {
+      axios
+        .get(this.urlchar)
+        .then((response) => (this.chars = response.data.results));
+    },
+    charpull() {
+      axios
+        .get(this.urlsearch)
+        .then((response) => (this.chars = response.data.results));
+    },
+    listele() {
+      this.urlsearch = "https://rickandmortyapi.com/api/character/?name=";
+      this.urlsearch = this.urlsearch + this.message;
+      this.charpull();
+    },
+    pagedown() {
+      this.urlchar = "https://rickandmortyapi.com/api/character/?page=";
+      if (this.pagenumber != 1) {
+        this.pagenumber = this.pagenumber - 1;
+        this.urlchar = this.urlchar + this.pagenumber;
       }
+      this.pagepull();
+    },
+    pageup() {
+      this.urlchar = "https://rickandmortyapi.com/api/character/?page=";
+      if (this.pagenumber != 42) {
+        this.pagenumber = this.pagenumber + 1;
+        this.urlchar = this.urlchar + this.pagenumber;
+      }
+      this.pagepull();
     },
   },
   created() {
-    axios
-      .get(this.urlchar)
-      .then((response) => (this.chars = response.data.results));
+    this.pagepull();
   },
 };
 </script>
 
 <style>
+input::placeholder {
+  opacity: 1;
+  color: #fafafa;
+}
+.search {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  height: 100px;
+  background-color: var(--bs-body-color);
+}
+.footer {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  height: 100px;
+  background-color: var(--bs-body-color);
+}
 .container-fluid {
   padding: 0;
 }
@@ -90,6 +158,7 @@ export default {
   align-items: center;
   flex-wrap: wrap;
   max-width: 1920px;
+  transition: all 3sn linear;
 }
 .content-showcase-area-card {
   width: 600px;
@@ -173,16 +242,18 @@ h2 {
   height: 0.5rem;
   width: 0.5rem;
   margin-right: 0.375rem;
+  border-radius: 50%;
+}
+.content-showcase-area-card-2 .grey {
+  background: rgb(164, 164, 164);
+}
+.content-showcase-area-card-2 .green {
+  background: rgb(34, 255, 0);
+}
+.content-showcase-area-card-2 .red {
   background: rgb(214, 61, 46);
-  border-radius: 50%;
 }
-.status__icon {
-  height: 0.5rem;
-  width: 0.5rem;
-  margin-right: 0.375rem;
-  background: rgb(85, 204, 68);
-  border-radius: 50%;
-}
+
 .header-h1 {
   margin: 0px;
   color: rgb(32, 35, 41);
